@@ -40,7 +40,7 @@ When we have the template, we can create so many reports as we want. The only on
 <pre>
 $docGenerator = new DocGenerator('template-test.odt', '/tmp');
 $docGenerator->create('final.doc', array('name' => 'John'));
-<pre>
+</pre>
 
 In the below code, it is used the template *template-test.odt* to generate a MS Word document. The second parameter of the *create* method is the data assigned to the placeholders, so every occurrence of *{{name}} placeholder will be replaced with the word *'John'*.
 
