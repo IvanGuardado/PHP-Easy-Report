@@ -16,6 +16,7 @@ It is useful to put a text in a specific situation of a document. The format is 
 ```{{id}}```
 
 Example:
+
 ```Montly report of user {{name}}```
 
 The value of the placeholder *{{name}}* will be setted from PHP.
@@ -36,9 +37,10 @@ Then, you must assign data to the widget from PHP.
 ## 3. Create the document
 When we have the template, we can create so many reports as we want. The only one we need to do is instantiate the EasyReport class and call his method *create* with the required params. For example:
 
-```$docGenerator = new DocGenerator('template-test.odt', '/tmp');
+<pre>
+$docGenerator = new DocGenerator('template-test.odt', '/tmp');
 $docGenerator->create('final.doc', array('name' => 'John'));
-```
+<pre>
 
 In the below code, it is used the template *template-test.odt* to generate a MS Word document. The second parameter of the *create* method is the data assigned to the placeholders, so every occurrence of *{{name}} placeholder will be replaced with the word *'John'*.
 
