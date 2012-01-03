@@ -1,0 +1,97 @@
+DocGenerator es una clase que permite generar documentos en los formatos PDF,
+ODT (OpenOffice), y DOC (MS Word) basándose en una plantilla creada en ODT.
+
+0. REQUERIMENTOS
+
+Es necesario tener instalada y configurada la herramienta "unoconv".
+
+1. CREAR UNA PLANTILLA
+
+La forma de crear una plantilla es muy fácil, tan solo tienes que abrir el 
+OpenOffice Writer y ponerte a escribir y formatear el texto tal y como quieras 
+que se genere la salida, reemplazando los valores considerados dinámicos por un
+placeholder. Un placeholder puede ser:
+
+1. Placeholder de variable. Sirve para situar un texto dinámico en una posición 
+concreta del documento. El formato del placeholder de variable es:
+
+{{identificador}}
+
+Por ejemplo:
+"Informe mensual del usuario {{name}}"
+
+
+2. Placeholder de widget. Para poder usar funciones más avanzadas, DocGenerator
+permite crear widgets. Un widget es un trozo de código que te permite añadir
+elementos más complejos como tablas, gráficos, formas, etc... 
+
+DocGenerator está diseñado para que la creación de widget sea sencilla 
+(para programadores) y de fácil instalación. El formato del placeholder de un 
+widget es:
+
+    {{:nombreWidget identificador}}
+
+Se diferencia fácilmente del placeholder de variable poque tiene lleva dos puntos
+tras las llaves. El identificador sirve, para luego desde código asignar datos
+a ese widget concreto. Ejemplo de creación de una tabla con datos de usuarios:
+
+    {{:table userList}}
+
+Luego desde código, faltaría asignar los datos al identificador 'userList'.
+
+2. GENERAR EL DOCUMENTO DINAMICAMENTE
+
+Una vez creada la plantilla, podemos fácilmente crear tantos documentos como 
+queramos gracias a la clase DocGenerator. Tan solo hay que instanciar la clase
+y llamar al método "create" con los datos requeridos. A continuación un ejemplo
+sencillo:
+
+$docGenerator = new DocGenerator('template-test.odt', '/tmp');
+$docGenerator->create('final.doc', array('name' => 'Iván'));
+
+En el código anterior se usa la plantilla template-test.odt para generar un 
+fichero de MS Word. El segundo parámetro del método "create" son los datos
+que se asignan a los placeholders, en este caso, todas las apariciones de {{name}}
+en la plantilla se reemplazarán por la palabra 'Iván'.
+
+En el caso de los placeholders de widgets, se puede pasar información de cualquier
+tipo, ya que cada widget, puede gestionar a su manera los datos que recibe. Por
+ejemplo, el caso del Table, el widget espera que se le pase un array bidimensional
+con los datos a mostrar. Por ejemplo:
+
+$data = array(
+    'visits' => array( 
+        array('Nombre', 'Fecha acceso', 'Tiempo visita'),
+        array('Emilio Nicolás', '20/10/2011', '5 min'),
+        array('Javier López', '20/10/2011', '1m'),
+        array('Adrián Mato', '19/10/2011', '2 min'),
+        array('Jesús Pérez', '18/10/2011', '8 min')
+));
+    
+$docGenerator->create('final.odt', $data);
+
+Representará los datos en una tabla en los lugares en los que aparezca su 
+placeholder: {{:table visits}}
+
+
+
+3. CREAR NUEVOS WIDGETS
+Para añadir un nuevo widget, se debe crear una clase que herede de 
+DocGenerator_Widget e implementar su método abstracto "render". El restultado
+que devuelva este método será el texto que se incrustará en su placeholder.
+
+Los widgets deben estar en el directorio DocGenerator/Widget/ y tienen que seguir
+el siguiente patrón de nomenclatura:
+    - El nombre de la clase del widget debe ser predecido por "DocGenerator_Widget_"
+    - El nombre del fichero debe ser el mismo que el de la clase (sin el 
+      "DocGenerator_Widget_").
+      
+IMPORTANTE: Una vez añadido el fichero a la ruta especificada, ya puedes usarlo 
+directamente en las plantillas. DocGenerator se encarga dinámicamente de cargar
+los ficheros necesarios cuando encuentra un placeholder de widget.
+Ejemplo:
+
+Fichero: DocGenerator/Widget/PieChart.php
+Clase: DocGenerator_Widget_PieChart
+Uso en template: {{:PieChart identificador}}
+
