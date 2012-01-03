@@ -1,65 +1,51 @@
-DocGenerator es una clase que permite generar documentos en los formatos PDF,
-ODT (OpenOffice), y DOC (MS Word) basándose en una plantilla creada en ODT.
+# PHP EasyReport - Create reports from PHP
+EasyReport is a PHP library that allows you to make reports in PDF,
+ODT (OpenOffice), and DOC (MS Word) formats using an ODT template file.
 
-0. REQUERIMENTOS
+## 0. Requirements
+To create PDF and DOC files, you need to install de **unoconv tool**.
 
-Es necesario tener instalada y configurada la herramienta "unoconv".
+## 1. Creating a template
+It is very easy to create a template, all you need is openning the OpenOffice Writer (or other text writer which can create ODT files) and input the text and styles like you would see the output. You must replace the dynamic values with placeholders.
 
-1. CREAR UNA PLANTILLA
+## 2. Placeholder
+There are two kinds of placeholder:
+### 2.1. Value placeholder
+It is useful to put a text in a specific situation of a document. The format is showed below:
 
-La forma de crear una plantilla es muy fácil, tan solo tienes que abrir el 
-OpenOffice Writer y ponerte a escribir y formatear el texto tal y como quieras 
-que se genere la salida, reemplazando los valores considerados dinámicos por un
-placeholder. Un placeholder puede ser:
+```{{id}}```
 
-1. Placeholder de variable. Sirve para situar un texto dinámico en una posición 
-concreta del documento. El formato del placeholder de variable es:
+Example:
+```Montly report of user {{name}}```
 
-{{identificador}}
+The value of the placeholder *{{name}}* will be setted from PHP.
 
-Por ejemplo:
-"Informe mensual del usuario {{name}}"
+### 2.2. Widget placeholder
+To get more advanced functions, EasyReport allows the use of widgets. A widget is a piece of code to add more complex elements to the doc (tables, charts, draws...).
 
+EasyReport is designed to allow you create or extend your own widgets. The widget placeholder format is showed below:
 
-2. Placeholder de widget. Para poder usar funciones más avanzadas, DocGenerator
-permite crear widgets. Un widget es un trozo de código que te permite añadir
-elementos más complejos como tablas, gráficos, formas, etc... 
+```{{:widgetName identifier}}```
 
-DocGenerator está diseñado para que la creación de widget sea sencilla 
-(para programadores) y de fácil instalación. El formato del placeholder de un 
-widget es:
+It is easy to differenciate it due to it has a colon next to the brace. The identifier is used to send data to the widget from the PHP code. At below, an example to create a users table:
 
-    {{:nombreWidget identificador}}
+```{{:table userList}}```
 
-Se diferencia fácilmente del placeholder de variable poque tiene lleva dos puntos
-tras las llaves. El identificador sirve, para luego desde código asignar datos
-a ese widget concreto. Ejemplo de creación de una tabla con datos de usuarios:
+Then, you must assign data to the widget from PHP.
 
-    {{:table userList}}
+## 3. Create the document
+When we have the template, we can create so many reports as we want. The only one we need to do is instantiate the EasyReport class and call his method *create* with the required params. For example:
 
-Luego desde código, faltaría asignar los datos al identificador 'userList'.
+```$docGenerator = new DocGenerator('template-test.odt', '/tmp');
+$docGenerator->create('final.doc', array('name' => 'John'));
+```
 
-2. GENERAR EL DOCUMENTO DINAMICAMENTE
+In the below code, it is used the template *template-test.odt* to generate a MS Word document. The second parameter of the *create* method is the data assigned to the placeholders, so every occurrence of *{{name}} placeholder will be replaced with the word *'John'*.
 
-Una vez creada la plantilla, podemos fácilmente crear tantos documentos como 
-queramos gracias a la clase DocGenerator. Tan solo hay que instanciar la clase
-y llamar al método "create" con los datos requeridos. A continuación un ejemplo
-sencillo:
+For widget placeholders, you can pass any kind of data (not only strings) since each widget handles the received data. For example, the table expects as data a bidimensional array to print the rows and columns:
 
-$docGenerator = new DocGenerator('template-test.odt', '/tmp');
-$docGenerator->create('final.doc', array('name' => 'Iván'));
-
-En el código anterior se usa la plantilla template-test.odt para generar un 
-fichero de MS Word. El segundo parámetro del método "create" son los datos
-que se asignan a los placeholders, en este caso, todas las apariciones de {{name}}
-en la plantilla se reemplazarán por la palabra 'Iván'.
-
-En el caso de los placeholders de widgets, se puede pasar información de cualquier
-tipo, ya que cada widget, puede gestionar a su manera los datos que recibe. Por
-ejemplo, el caso del Table, el widget espera que se le pase un array bidimensional
-con los datos a mostrar. Por ejemplo:
-
-$data = array(
+<pre>
+ $data = array(
     'visits' => array( 
         array('Nombre', 'Fecha acceso', 'Tiempo visita'),
         array('Emilio Nicolás', '20/10/2011', '5 min'),
@@ -68,30 +54,8 @@ $data = array(
         array('Jesús Pérez', '18/10/2011', '8 min')
 ));
     
-$docGenerator->create('final.odt', $data);
+$docGenerator->create('final.odt', $data)
+</pre>
 
-Representará los datos en una tabla en los lugares en los que aparezca su 
-placeholder: {{:table visits}}
-
-
-
-3. CREAR NUEVOS WIDGETS
-Para añadir un nuevo widget, se debe crear una clase que herede de 
-DocGenerator_Widget e implementar su método abstracto "render". El restultado
-que devuelva este método será el texto que se incrustará en su placeholder.
-
-Los widgets deben estar en el directorio DocGenerator/Widget/ y tienen que seguir
-el siguiente patrón de nomenclatura:
-    - El nombre de la clase del widget debe ser predecido por "DocGenerator_Widget_"
-    - El nombre del fichero debe ser el mismo que el de la clase (sin el 
-      "DocGenerator_Widget_").
-      
-IMPORTANTE: Una vez añadido el fichero a la ruta especificada, ya puedes usarlo 
-directamente en las plantillas. DocGenerator se encarga dinámicamente de cargar
-los ficheros necesarios cuando encuentra un placeholder de widget.
-Ejemplo:
-
-Fichero: DocGenerator/Widget/PieChart.php
-Clase: DocGenerator_Widget_PieChart
-Uso en template: {{:PieChart identificador}}
+The code will show a table in every occurrence of the widget placeholder *{{:table visits}}*
 
