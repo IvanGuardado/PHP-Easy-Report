@@ -12,6 +12,8 @@ class EasyReport
 {
     /** @var string The file with the OpenOffice XML content */
 	const CONTENT_XML = 'content.xml';
+  
+  const STYLES_XML = 'styles.xml';
 	
 	/** @var string Microsoft Word extension */
 	const DOC_EXTENSION = 'doc';
@@ -81,12 +83,17 @@ class EasyReport
 			
 			$contentXmlFile = $this->_tmpFilePath.DIRECTORY_SEPARATOR
 				.self::CONTENT_XML;
+      $stylesXmlFile = $this->_tmpFilePath.DIRECTORY_SEPARATOR
+        .self::STYLES_XML;
 
 			$content = file_get_contents($contentXmlFile);
+      $styles = file_get_contents($stylesXmlFile);
 			
 			//replace the template content with the data
 			$newContent = $this->replaceVars($content, $data);
+      $newStyles = $this->replaceVars($styles, $data);
 			file_put_contents($contentXmlFile, $newContent);
+      file_put_contents($stylesXmlFile, $newStyles);
 			
 			//If the output format is pdf or doc, it needs to create de odt and
 			//to convert it.
