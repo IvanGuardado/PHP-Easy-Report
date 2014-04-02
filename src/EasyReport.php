@@ -207,8 +207,7 @@ class EasyReport
 	    $cleanText = preg_replace('/<text:p[^<]+?>{{:(\S+ \S+)}}<\/text:p>/', '{{:$1}}', $text);
 	    //$cleanText = $text;
 	    
-		return preg_replace('/{{(.+?)}}/e', "\$this->_replaceVarsCallback(\$data, '$1')"
-		    , $cleanText);
+            return preg_replace_callback('/{{(.+?)}}/', function($matches) use ($data){ return $this->_replaceVarsCallback($data, $matches[1]);}, $cleanText);
 	}
 	
 	/**
